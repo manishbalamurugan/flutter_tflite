@@ -40,6 +40,7 @@ class _MyAppState extends State<MyApp> {
   bool _busy = false;
 
   Future predictImagePicker() async {
+    // ignore: deprecated_member_use
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
     setState(() {
