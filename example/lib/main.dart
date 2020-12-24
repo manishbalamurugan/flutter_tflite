@@ -40,13 +40,13 @@ class _MyAppState extends State<MyApp> {
   bool _busy = false;
 
   Future predictImagePicker() async {
-    // ignore: deprecated_member_use
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var image = await ImagePicker().getImage(source: ImageSource.gallery);
     if (image == null) return;
     setState(() {
       _busy = true;
     });
-    predictImage(image);
+    final imagePath = File(image.path);
+    predictImage(imagePath);
   }
 
   Future predictImage(File image) async {
@@ -105,8 +105,8 @@ class _MyAppState extends State<MyApp> {
       switch (_model) {
         case yolo:
           res = await Tflite.loadModel(
-            model: "assets/yolov2_tiny.tflite",
-            labels: "assets/yolov2_tiny.txt",
+            model: "assets/yolov4.tflite",
+            labels: "assets/yolov4.txt",
             // useGpuDelegate: true,
           );
           break;
@@ -308,26 +308,20 @@ class _MyAppState extends State<MyApp> {
     double factorY = _imageHeight / _imageWidth * screen.width;
     Color blue = Color.fromRGBO(37, 213, 253, 1.0);
     return _recognitions.map((re) {
-      return Positioned(
-        left: re["rect"]["x"] * factorX,
-        top: re["rect"]["y"] * factorY,
-        width: re["rect"]["w"] * factorX,
-        height: re["rect"]["h"] * factorY,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-            border: Border.all(
-              color: blue,
-              width: 2,
-            ),
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+          border: Border.all(
+            color: blue,
+            width: 2,
           ),
-          child: Text(
-            "${re["detectedClass"]} ${(re["confidenceInClass"] * 100).toStringAsFixed(0)}%",
-            style: TextStyle(
-              background: Paint()..color = blue,
-              color: Colors.white,
-              fontSize: 12.0,
-            ),
+        ),
+        child: Text(
+          "${re["detectedClass"]} ${(re["confidenceInClass"] * 100).toStringAsFixed(0)}%",
+          style: TextStyle(
+            background: Paint()..color = blue,
+            color: Colors.white,
+            fontSize: 12.0,
           ),
         ),
       );
@@ -346,17 +340,11 @@ class _MyAppState extends State<MyApp> {
       var color = Color((Random().nextDouble() * 0xFFFFFF).toInt() << 0)
           .withOpacity(1.0);
       var list = re["keypoints"].values.map<Widget>((k) {
-        return Positioned(
-          left: k["x"] * factorX - 6,
-          top: k["y"] * factorY - 6,
-          width: 100,
-          height: 12,
-          child: Text(
-            "● ${k["part"]}",
-            style: TextStyle(
-              color: color,
-              fontSize: 12.0,
-            ),
+        return Text(
+          "● ${k["part"]}",
+          style: TextStyle(
+            color: color,
+            fontSize: 12.0,
           ),
         );
       }).toList();
@@ -373,12 +361,9 @@ class _MyAppState extends State<MyApp> {
     List<Widget> stackChildren = [];
 
     if (_model == deeplab && _recognitions != null) {
-      stackChildren.add(Positioned(
-        top: 0.0,
-        left: 0.0,
-        width: size.width,
-        child: _image == null
-            ? Text('No image selected.')
+      stackChildren.add(
+        _image == null
+            ? Center(child: Text('No image selected.'))
             : Container(
                 decoration: BoxDecoration(
                     image: DecorationImage(
@@ -386,14 +371,13 @@ class _MyAppState extends State<MyApp> {
                         image: MemoryImage(_recognitions),
                         fit: BoxFit.fill)),
                 child: Opacity(opacity: 0.3, child: Image.file(_image))),
-      ));
+      );
     } else {
-      stackChildren.add(Positioned(
-        top: 0.0,
-        left: 0.0,
-        width: size.width,
-        child: _image == null ? Text('No image selected.') : Image.file(_image),
-      ));
+      stackChildren.add(
+        _image == null
+            ? Center(child: Text('No image selected.'))
+            : Image.file(_image),
+      );
     }
 
     if (_model == mobile) {

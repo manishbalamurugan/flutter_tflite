@@ -47,8 +47,8 @@ flutter:
   assets:
    - assets/mobilenet_v1_1.0_224.txt
    - assets/mobilenet_v1_1.0_224.tflite
-   - assets/yolov2_tiny.tflite
-   - assets/yolov2_tiny.txt
+   - assets/yolov4.tflite
+   - assets/yolov4.txt
    - assets/ssd_mobilenet.tflite
    - assets/ssd_mobilenet.txt
    - assets/deeplabv3_257_mv_gpu.tflite
